@@ -8,6 +8,9 @@ dragonrepo tracks commands during an active engagement, categorizes common secur
 - Markdown
 - JSON
 
+<img width="936" height="317" alt="ChatGPT Image Jun 4, 2026, 02_51_56 PM" src="https://github.com/user-attachments/assets/86ffcb5f-131b-421c-a994-99e0f6547dd0" />
+
+
 ## Install
 
 From the project folder:
