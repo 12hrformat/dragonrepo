@@ -1,0 +1,95 @@
+# {{ config.report_title | default(project ~ " Security Assessment") }}
+
+Generated: {{ generated_at }}
+
+## 1. Executive Summary
+
+{{ executive_summary }}
+
+## 2. Methodology
+
+Testing activity was reconstructed from operator commands, imported evidence artifacts, and project notes. Commands were categorized into common penetration testing phases and redacted before report generation.
+
+## 3. Reconnaissance
+
+{% for command in grouped_commands.get("Reconnaissance", []) -%}
+- `{{ command.command }}`
+{% else -%}
+No reconnaissance commands were tracked.
+{% endfor %}
+
+## 4. Enumeration
+
+{% for command in grouped_commands.get("Enumeration", []) -%}
+- `{{ command.command }}`
+{% else -%}
+No enumeration commands were tracked.
+{% endfor %}
+
+## 5. Content Discovery
+
+{% for command in grouped_commands.get("Content Discovery", []) -%}
+- `{{ command.command }}`
+{% else -%}
+No content discovery commands were tracked.
+{% endfor %}
+
+## 6. Vulnerability Assessment
+
+{% for command in grouped_commands.get("Vulnerability Assessment", []) + grouped_commands.get("Web Testing", []) -%}
+- `{{ command.command }}`
+{% else -%}
+No vulnerability assessment commands were tracked.
+{% endfor %}
+
+## 7. Findings
+
+{% for finding in findings -%}
+### {{ finding.severity }} - {{ finding.title }}
+
+{{ finding.summary }}
+
+Recommendation: {{ finding.recommendation }}
+
+{% else -%}
+No findings were automatically summarized. Add validated issues to project notes or evidence before final delivery.
+{% endfor %}
+
+## 8. Evidence
+
+{% for item in evidence -%}
+### {{ item.title }}
+
+- Path: `{{ item.path }}`
+- Type: {{ item.kind }}
+
+{% if item.kind == "output" -%}
+```text
+{{ item.excerpt }}
+```
+{% else -%}
+Screenshot embedded in HTML report.
+{% endif %}
+
+{% else -%}
+No evidence files were imported.
+{% endfor %}
+
+## 9. Timeline
+
+{% for event in timeline -%}
+- {{ event.time }} - {{ event.title }} ({{ event.category }})
+{% else -%}
+No timeline events were reconstructed.
+{% endfor %}
+
+## 10. Recommendations
+
+- Validate all automated scanner findings manually.
+- Prioritize remediation based on exploitability, exposure, and business impact.
+- Retain evidence securely and distribute reports only through approved channels.
+- Review authentication, monitoring, and patch management controls for tested assets.
+
+## 11. Conclusion
+
+The engagement activity captured by DRAGON provides a structured basis for a professional security assessment report. Final delivery should include analyst-validated findings, client scope confirmation, and remediation ownership.
