@@ -13,7 +13,7 @@ dragonrepo tracks commands during an active engagement, categorizes common secur
 From the project folder:
 ```bash
 git clone https://github.com/12hrformat/dragonrepo.git
-cd into the folder
+cd dragonrepo
 mkdir assets reports
 sudo bash install.sh
 ```
