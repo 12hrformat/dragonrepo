@@ -11,9 +11,8 @@ dragonrepo tracks commands during an active engagement, categorizes common secur
 ## Install
 
 From the project folder:
-1. git clone this repo
-
 ```bash
+git clone https://github.com/12hrformat/dragonrepo.git
 cd into the folder
 mkdir assets reports
 sudo bash install.sh
