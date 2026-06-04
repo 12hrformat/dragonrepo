@@ -15,6 +15,7 @@ From the project folder:
 
 ```bash
 cd into the folder
+mkdir assets reports
 sudo bash install.sh
 ```
 
