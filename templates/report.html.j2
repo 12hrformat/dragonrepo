@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ config.report_title | default(project ~ " Security Assessment") }}</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d10;
+      --panel: #151920;
+      --panel-2: #1d232c;
+      --text: #eef2f6;
+      --muted: #98a2b3;
+      --line: #2b3440;
+      --accent: #ef4444;
+      --accent-2: #38bdf8;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    header {
+      padding: 40px 28px 28px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #171b22 0%, #0b0d10 100%);
+    }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px; }
+    h1 { margin: 0; font-size: 34px; letter-spacing: 0; }
+    h2 { margin: 0 0 16px; font-size: 22px; }
+    h3 { margin-bottom: 8px; }
+    .subtitle { color: var(--muted); margin-top: 8px; }
+    .brand { color: var(--accent); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.12em; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin: 24px 0; }
+    .metric, section, details {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+    .metric strong { display: block; font-size: 28px; }
+    .metric span, .muted { color: var(--muted); }
+    section { margin: 18px 0; }
+    details { margin: 12px 0; }
+    summary { cursor: pointer; font-weight: 700; }
+    code, pre {
+      font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      background: #0f1319;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    code { padding: 2px 5px; }
+    pre { padding: 14px; overflow-x: auto; white-space: pre-wrap; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 13px; text-transform: uppercase; }
+    .finding { border-left: 4px solid var(--accent); background: var(--panel-2); padding: 14px; border-radius: 6px; margin: 12px 0; }
+    .severity { color: var(--warn); font-weight: 800; }
+    .search { width: 100%; padding: 12px 14px; background: #0f1319; border: 1px solid var(--line); color: var(--text); border-radius: 6px; margin: 12px 0 18px; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .shot img { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #050608; }
+    .timeline { border-left: 2px solid var(--accent); padding-left: 18px; }
+    .timeline-item { margin: 0 0 14px; }
+    .time { color: var(--accent-2); font-weight: 800; }
+    .bar { height: 9px; background: #0f1319; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .bar span { display: block; height: 100%; background: var(--accent); }
+    footer { color: var(--muted); padding: 30px 28px; text-align: center; }
+    @media (max-width: 640px) {
+      h1 { font-size: 26px; }
+      main, header { padding-left: 16px; padding-right: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">DRAGON Report Generator</div>
+    <h1>{{ config.report_title | default(project ~ " Security Assessment") }}</h1>
+    <div class="subtitle">Generated {{ generated_at }} for project <strong>{{ project }}</strong></div>
+  </header>
+  <main>
+    <div class="grid">
+      <div class="metric"><strong>{{ stats.total_commands }}</strong><span>Commands tracked</span></div>
+      <div class="metric"><strong>{{ stats.total_evidence }}</strong><span>Evidence artifacts</span></div>
+      <div class="metric"><strong>{{ grouped_commands | length }}</strong><span>Activity categories</span></div>
+      <div class="metric"><strong>{{ findings | length }}</strong><span>Auto summaries</span></div>
+    </div>
+
+    <section>
+      <h2>Executive Summary</h2>
+      <p>{{ executive_summary }}</p>
+    </section>
+
+    <section>
+      <h2>Engagement Statistics</h2>
+      {% set max_count = (stats.category_counts.values() | list | max) if stats.category_counts else 1 %}
+      {% for category, count in stats.category_counts.items() %}
+      <p><strong>{{ category }}</strong> <span class="muted">{{ count }}</span></p>
+      <div class="bar"><span style="width: {{ (count / max_count * 100) | round }}%"></span></div>
+      {% endfor %}
+    </section>
+
+    <section>
+      <h2>Methodology</h2>
+      <p>Testing activity was reconstructed from operator commands, imported evidence artifacts, and project notes. Commands were categorized into common penetration testing phases and redacted before report generation.</p>
+    </section>
+
+    <section>
+      <h2>Activity Review</h2>
+      <input class="search" id="search" placeholder="Search commands, categories, and evidence..." aria-label="Search report">
+      {% for category, items in grouped_commands.items() %}
+      <details open class="searchable">
+        <summary>{{ category }} ({{ items | length }})</summary>
+        <table>
+          <thead><tr><th>Time</th><th>Activity</th><th>Command</th></tr></thead>
+          <tbody>
+          {% for command in items %}
+            <tr><td>{{ command.timestamp }}</td><td>{{ command.activity }}</td><td><code>{{ command.command }}</code></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </details>
+      {% endfor %}
+    </section>
+
+    <section>
+      <h2>Findings</h2>
+      {% for finding in findings %}
+      <div class="finding searchable">
+        <div class="severity">{{ finding.severity }}</div>
+        <h3>{{ finding.title }}</h3>
+        <p>{{ finding.summary }}</p>
+        <p><strong>Recommendation:</strong> {{ finding.recommendation }}</p>
+      </div>
+      {% else %}
+      <p class="muted">No findings were automatically summarized. Add validated issues to project notes or evidence before final delivery.</p>
+      {% endfor %}
+    </section>
+
+    <section>
+      <h2>Evidence</h2>
+      <div class="gallery">
+      {% for item in evidence if item.kind == "screenshot" %}
+        <div class="shot searchable"><img src="{{ item.excerpt }}" alt="{{ item.title }}"><p>{{ item.title }}<br><span class="muted">{{ item.path }}</span></p></div>
+      {% endfor %}
+      </div>
+      {% for item in evidence if item.kind == "output" %}
+      <details class="searchable">
+        <summary>{{ item.title }} - {{ item.path }}</summary>
+        <pre>{{ item.excerpt }}</pre>
+      </details>
+      {% else %}
+      <p class="muted">No text evidence files were imported.</p>
+      {% endfor %}
+    </section>
+
+    <section>
+      <h2>Timeline</h2>
+      <div class="timeline">
+      {% for event in timeline %}
+        <div class="timeline-item searchable"><span class="time">{{ event.time }}</span> <strong>{{ event.title }}</strong><br><span class="muted">{{ event.category }} - {{ event.details }}</span></div>
+      {% endfor %}
+      </div>
+    </section>
+
+    <section>
+      <h2>Recommendations</h2>
+      <ul>
+        <li>Validate all automated scanner findings manually.</li>
+        <li>Prioritize remediation based on exploitability, exposure, and business impact.</li>
+        <li>Retain evidence securely and distribute reports only through approved channels.</li>
+        <li>Review authentication, monitoring, and patch management controls for tested assets.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Conclusion</h2>
+      <p>The engagement activity captured by DRAGON provides a structured basis for a professional security assessment report. Final delivery should include analyst-validated findings, client scope confirmation, and remediation ownership.</p>
+    </section>
+  </main>
+  <footer>Generated by DRAGON Report Generator</footer>
+  <script>
+    const search = document.getElementById('search');
+    search?.addEventListener('input', () => {
+      const term = search.value.toLowerCase();
+      document.querySelectorAll('.searchable').forEach((node) => {
+        node.style.display = node.textContent.toLowerCase().includes(term) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
