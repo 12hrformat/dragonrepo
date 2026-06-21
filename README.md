@@ -9,7 +9,7 @@ dragonrepo tracks commands during an active engagement, categorizes common secur
 - JSON
 
 <img width="936" height="317" alt="ChatGPT Image Jun 4, 2026, 02_51_56 PM" src="https://github.com/user-attachments/assets/86ffcb5f-131b-421c-a994-99e0f6547dd0" />
-
+CONTACT-->INTAGRAM @12HRFORMAT
 
 ## Install
 
@@ -67,16 +67,18 @@ Open the HTML report:
 dragonrepo open-report
 ```
 
-## Simple Workflow
+## Example Full Session
 
 ```bash
-dragonrepo start <project>
+dragonrepo start htb-machine
 eval "$(dragonrepo hook zsh)"
-# do your assessment
+nmap -sV -oX scans/nmap.xml 10.10.10.5
+subfinder -d example.com -o scans/subdomains.txt
+ffuf -u http://10.10.10.5/FUZZ -w /usr/share/wordlists/dirb/common.txt
+dragonrepo status
 dragonrepo generate
 dragonrepo open-report
 ```
-
 If you forget what to do, run:
 
 ```bash
@@ -348,18 +350,5 @@ Or:
 xdg-open ~/.dragonrepo/projects/<project>/reports/report.html
 ```
 
-## Example Full Session
-
-```bash
-dragonrepo start htb-machine
-eval "$(dragonrepo hook zsh)"
-nmap -sV -oX scans/nmap.xml 10.10.10.5
-subfinder -d example.com -o scans/subdomains.txt
-ffuf -u http://10.10.10.5/FUZZ -w /usr/share/wordlists/dirb/common.txt
-dragonrepo status
-dragonrepo generate
-dragonrepo open-report
-```
-## CONTACT=INTAGRAM: @12HRFORAT
 ## License
 Open source friendly. Review and adapt for your own security workflow.
