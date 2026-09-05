@@ -1,7 +1,4 @@
-#### hey so idk if i wanna do this or not, ive lost motivation to be honest but ok,
-###### if you can, then please show some support its GREATLY appreciated
-anyways sorry for all that 
-
+#I've officially left the project. It's no longer under development by me, and I won't be coding or working on it anymore. Thanks to everyone who supported it while I was working on it ❤️- love from dragon
 
 # DRAGON Report Generator
 🤖 DRAGON REPO turns a bug bounty commands into a ready-to-use reports.
