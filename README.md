@@ -1,3 +1,8 @@
+#### hey so idk if i wanna do this or not, ive lost motivation to be honest but ok,
+###### if you can, then please show some support its GREATLY appreciated
+anyways sorry for all that 
+
+
 # DRAGON Report Generator
 🤖 DRAGON REPO turns a bug bounty commands into a ready-to-use reports.
 
