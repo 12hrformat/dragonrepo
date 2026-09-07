@@ -1,4 +1,4 @@
-### I've officially left the project. It's no longer under development by me, and I won't be coding or working on it anymore. Thanks to everyone who supported it while I was working on it ❤️- love from dragon
+### well since i guess my friend donst wanna code i have to take this repository under my name... AGAIN. So, guess i'm back
 
 # DRAGON Report Generator
 🤖 DRAGON REPO turns a bug bounty commands into a ready-to-use reports.
