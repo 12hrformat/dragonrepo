@@ -1,5 +1,3 @@
-### well since i guess my friend donst wanna code i have to take this repository under my name... AGAIN. So, guess i'm back
-
 # DRAGON Report Generator
 🤖 DRAGON REPO turns a bug bounty commands into a ready-to-use reports.
 
