@@ -14,9 +14,9 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from modules.parser import known_tool_names
-from modules.reporter import render_reports
-from modules.tracker import (
+from dragonrepo.modules.parser import known_tool_names
+from dragonrepo.modules.reporter import render_reports
+from dragonrepo.modules.tracker import (
     ACTIVE_SESSION,
     PROJECTS_DIR,
     create_project,
