@@ -557,6 +557,12 @@ Use:
 dragonrepo open-report
 ```
 
+TODO:
+convert dragonrepo into a pypi package so users can install it with just
+```
+pip install dragonrepo
+```
+
 or open the generated HTML file manually in a browser.
 
 ## License
