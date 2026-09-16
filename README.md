@@ -42,7 +42,7 @@ cd dragonrepo
 Install DRAGON as a Python package:
 
 ```bash
-python3 -m pip install .
+python3 -m pip install dragonrepo
 ```
 
 After installation, verify the CLI:
