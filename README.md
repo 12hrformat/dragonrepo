@@ -37,6 +37,7 @@ Clone the repository and enter the project directory:
 ```bash
 git clone https://github.com/12hrformat/dragonrepo.git
 cd dragonrepo
+./install.sh
 ```
 
 Install DRAGON as a Python package:
