@@ -28,11 +28,23 @@ DRAGON tracks commands during an active engagement, categorizes common security 
 
 * Python 3.9 or newer
 * Linux, macOS, or another Unix-like environment for shell-hook functionality
-* Git for cloning the repository
+* Git for cloning the repository (only needed for source or wheel installs)
 
 ## Installation
 
-Clone the repository and enter the project directory:
+Choose whichever method fits your workflow. All three end with the same `dragonrepo` CLI available on your `PATH`.
+
+### Option 1: Install from PyPI (recommended)
+
+The simplest path — no cloning required.
+
+```bash
+python3 -m pip install dragonrepo
+```
+
+### Option 2: Install from source
+
+Clone the repository and run the install script:
 
 ```bash
 git clone https://github.com/12hrformat/dragonrepo.git
@@ -40,39 +52,38 @@ cd dragonrepo
 ./install.sh
 ```
 
-Install DRAGON as a Python package:
+Alternatively, install the cloned source directly with pip:
 
 ```bash
-python3 -m pip install dragonrepo
+git clone https://github.com/12hrformat/dragonrepo.git
+cd dragonrepo
+python3 -m pip install .
 ```
 
-After installation, verify the CLI:
+### Option 3: Install from a built wheel
+
+Useful for offline installs, testing a release artifact, or packaging DRAGON for distribution.
 
 ```bash
-dragonrepo --help
-```
-
-You can also verify the installation:
-
-```bash
-dragonrepo doctor
-```
-
-### Installing from a built wheel
-
-To build the distributable package:
-
-```bash
+git clone https://github.com/12hrformat/dragonrepo.git
+cd dragonrepo
 python3 -m pip install --upgrade build
 python3 -m build
 ```
 
-The build produces a wheel and source archive in `dist/`.
-
-Install the wheel with:
+This produces a wheel and source archive in `dist/`. Install the wheel with:
 
 ```bash
 python3 -m pip install dist/dragonrepo-1.0.0-py3-none-any.whl
+```
+
+### Verify the installation
+
+Regardless of which method you used:
+
+```bash
+dragonrepo --help
+dragonrepo doctor
 ```
 
 ## Quick Start
@@ -460,27 +471,15 @@ The Jinja templates are bundled inside the Python package so report generation w
 
 ## Development
 
-Build the package locally:
+Run the CLI directly from a cloned source tree without installing:
 
 ```bash
-python3 -m pip install --upgrade build
-python3 -m build
-```
-
-Run the CLI directly from the source tree:
-
-```bash
+git clone https://github.com/12hrformat/dragonrepo.git
+cd dragonrepo
 python3 -m dragonrepo.cli --help
 ```
 
-For a clean package test:
-
-```bash
-python3 -m pip install dist/dragonrepo-1.0.0-py3-none-any.whl
-dragonrepo --help
-```
-
-Then test the main workflow:
+For a clean end-to-end package test, see [Option 3: Install from a built wheel](#option-3-install-from-a-built-wheel) above, then run:
 
 ```bash
 dragonrepo start packaging-test
@@ -492,7 +491,7 @@ dragonrepo generate
 
 ### `dragonrepo` is not found
 
-Make sure the package was installed successfully:
+Make sure the package was installed successfully. From a cloned source tree:
 
 ```bash
 python3 -m pip install .
