@@ -38,6 +38,7 @@ python3 -m pip install dragonrepo
 ```bash
 git clone https://github.com/12hrformat/dragonrepo.git
 cd dragonrepo
+chmod +x install.sh
 sudo ./install.sh
 ```
 
