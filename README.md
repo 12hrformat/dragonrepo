@@ -33,12 +33,21 @@ All methods end with the same `dragonrepo` CLI on your `PATH`.
 python3 -m pip install dragonrepo
 ```
 
-**From source:**
+**From source (system-wide install script):**
 
 ```bash
 git clone https://github.com/12hrformat/dragonrepo.git
 cd dragonrepo
-./install.sh
+sudo ./install.sh
+```
+
+The script installs the package into an isolated virtual environment at `/opt/dragonrepo/.venv` and links the `dragonrepo` launcher into `/usr/local/bin`. It requires `sudo`, Python 3.9 or newer, and leaves your system Python untouched. Re-run it any time to update.
+
+If you prefer not to install system-wide, install the package directly instead (it still exposes the same `dragonrepo` command):
+
+```bash
+cd dragonrepo
+python3 -m pip install .
 ```
 
 **From a built wheel:**
