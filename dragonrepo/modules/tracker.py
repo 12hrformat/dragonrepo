@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator
 
-from .parser import parse_command
+from .parser import is_noise_command, parse_command
 from .redactor import redact_text
 
 
@@ -190,8 +190,9 @@ def record_command(raw_command: str, project: str | None = None) -> bool:
     parsed = parse_command(raw_command)
     if not parsed.command:
         return False
-    ignored_prefixes = ("dragonrepo record", "dragonrepo hook", "history", "fc -")
-    if parsed.command.startswith(ignored_prefixes):
+    if is_noise_command(parsed.command):
+        return False
+    if parsed.executable == "dragonrepo" or parsed.command.startswith(("history", "fc -")):
         return False
 
     init_db(active_project)

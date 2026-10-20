@@ -43,6 +43,61 @@ SECURITY_TOOLS: dict[str, tuple[str, str]] = {
     "cp": ("Evidence Collection", "File collection"),
 }
 
+NOISE_COMMANDS: frozenset[str] = frozenset(
+    {
+        # terminal control / display
+        "clear",
+        "reset",
+        "cls",
+        # system-info splashes
+        "fastfetch",
+        "neofetch",
+        "screenfetch",
+        "paleofetch",
+        "pfetch",
+        "ufetch",
+        "macchina",
+        "archey",
+        "archey3",
+        "nitch",
+        # shell navigation and builtins
+        "cd",
+        "pwd",
+        "ls",
+        "ll",
+        "la",
+        "exit",
+        "logout",
+        "history",
+        "alias",
+        "unalias",
+        "jobs",
+        "fg",
+        "bg",
+        "wait",
+        "help",
+        "source",
+        "which",
+        "type",
+        "whereis",
+        # pagers
+        "man",
+        "less",
+        "more",
+        "most",
+        # editors
+        "vi",
+        "vim",
+        "nvim",
+        "nano",
+        "emacs",
+        "micro",
+        "hx",
+    }
+)
+
+SHELL_OPERATORS: tuple[str, ...] = ("&&", "||", ";", "|")
+
 KEYWORD_CATEGORIES: tuple[tuple[tuple[str, ...], str, str], ...] = (
     (("screenshot", "scrot", "gnome-screenshot", "import "), "Evidence Collection", "Screenshot capture"),
     (("subdomain", "dns", "zone-transfer"), "Reconnaissance", "DNS reconnaissance"),
@@ -89,6 +144,26 @@ def parse_command(raw_command: str) -> ParsedCommand:
         category=category,
         activity=activity,
     )
+
+
+def is_noise_command(raw_command: str) -> bool:
+    """Return True for shell noise that should never appear in a report.
+
+    A command is noise when its executable is in NOISE_COMMANDS. Compound
+    commands such as ``cd /tmp && nmap ...`` still count as real activity, so
+    they are kept.
+    """
+    command = raw_command.strip()
+    if not command:
+        return True
+    if any(operator in command for operator in SHELL_OPERATORS):
+        return False
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        parts = command.split()
+    executable = Path(parts[0]).name if parts else ""
+    return executable in NOISE_COMMANDS
 
 
 def known_tool_names() -> list[str]:

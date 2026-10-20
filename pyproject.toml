@@ -26,5 +26,6 @@ include = ["dragonrepo*"]
 
 [tool.setuptools.package-data]
 dragonrepo = [
-    "templates/*.j2"
+    "templates/*.j2",
+    "assets/*",
 ]

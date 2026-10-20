@@ -4,47 +4,36 @@ DRAGON Report Generator turns security-assessment workflow activity into ready-t
 
 Tired of making reports manually?
 
-DRAGON tracks commands during an active engagement, categorizes common security tools, imports evidence such as screenshots and scan output, redacts sensitive data, and generates professional reports in:
-
-* HTML
-* Markdown
-* JSON
+DRAGON tracks commands during an active engagement, categorizes common security tools, imports evidence such as screenshots and scan output, redacts sensitive data, and generates professional reports in HTML, Markdown, and JSON.
 
 <img width="936" height="317" alt="DRAGON Report Generator" src="https://github.com/user-attachments/assets/86ffcb5f-131b-421c-a994-99e0f6547dd0" />
 
 ## Features
 
-* Command tracking for active projects
+* Command tracking for active projects, scoped to the terminal you enable it in
+* Automatic filtering of shell noise (`clear`, `fastfetch`, `cd`, `ls`, pagers, editors, and more)
 * Security-tool categorization
-* Evidence collection
-* Sensitive-data redaction
-* HTML, Markdown, and JSON report generation
-* Project-based engagement storage
-* Terminal dashboard and statistics
+* Evidence collection and sensitive-data redaction
+* HTML, Markdown, and JSON reports, plus optional PDF export
+* Project-based storage with a terminal dashboard
 * Zsh, Bash, and Fish shell hooks
-* Optional PDF export when a supported PDF engine is installed
 
 ## Requirements
 
 * Python 3.9 or newer
 * Linux, macOS, or another Unix-like environment for shell-hook functionality
-* Git for cloning the repository (only needed for source or wheel installs)
 
 ## Installation
 
-Choose whichever method fits your workflow. All three end with the same `dragonrepo` CLI available on your `PATH`.
+All methods end with the same `dragonrepo` CLI on your `PATH`.
 
-### Option 1: Install from PyPI (recommended)
-
-The simplest path — no cloning required.
+**From PyPI (recommended):**
 
 ```bash
 python3 -m pip install dragonrepo
 ```
 
-### Option 2: Install from source
-
-Clone the repository and run the install script:
+**From source:**
 
 ```bash
 git clone https://github.com/12hrformat/dragonrepo.git
@@ -52,34 +41,17 @@ cd dragonrepo
 ./install.sh
 ```
 
-Alternatively, install the cloned source directly with pip:
-
-```bash
-git clone https://github.com/12hrformat/dragonrepo.git
-cd dragonrepo
-python3 -m pip install .
-```
-
-### Option 3: Install from a built wheel
-
-Useful for offline installs, testing a release artifact, or packaging DRAGON for distribution.
+**From a built wheel:**
 
 ```bash
 git clone https://github.com/12hrformat/dragonrepo.git
 cd dragonrepo
 python3 -m pip install --upgrade build
 python3 -m build
+python3 -m pip install dist/dragonrepo-*.whl
 ```
 
-This produces a wheel and source archive in `dist/`. Install the wheel with:
-
-```bash
-python3 -m pip install dist/dragonrepo-1.0.0-py3-none-any.whl
-```
-
-### Verify the installation
-
-Regardless of which method you used:
+Verify:
 
 ```bash
 dragonrepo --help
@@ -88,60 +60,86 @@ dragonrepo doctor
 
 ## Quick Start
 
-Create or activate a project:
-
 ```bash
-dragonrepo start test-lab
+dragonrepo start test-lab          # create or resume a project
+eval "$(dragonrepo hook zsh)"      # enable tracking in THIS terminal (bash/fish below)
+nmap -sV 10.10.10.5                # work normally
+dragonrepo status                  # active project and command count
+dragonrepo generate                # build HTML, Markdown, and JSON reports
+dragonrepo open-report             # open the HTML report
 ```
 
-Enable command tracking in your current terminal.
+Run `dragonrepo` with no arguments for the same workflow as an on-screen guide.
 
-For Zsh:
+## Shell Hooks
+
+DRAGON tracks commands **per terminal**. The hook only enables recording for the terminal where you run it — every other terminal keeps working normally and is *not* logged. When tracking is enabled, the shell prints a short reminder so it is always clear which terminal is being recorded.
+
+**Zsh:**
 
 ```bash
 eval "$(dragonrepo hook zsh)"
 ```
 
-For Bash:
+**Bash:**
 
 ```bash
 eval "$(dragonrepo hook bash)"
 ```
 
-For Fish:
+**Fish:**
 
 ```bash
 dragonrepo hook fish
 ```
 
-Run your normal security-assessment tools during an authorized engagement.
-
-For example:
+To enable it automatically, add the matching line to your shell rc file, for example:
 
 ```bash
-nmap -sV 10.10.10.5
-ffuf -u http://10.10.10.5/FUZZ -w /usr/share/wordlists/dirb/common.txt
+echo 'eval "$(dragonrepo hook zsh)"' >> ~/.zshrc
 ```
 
-Check the active project:
+Only use command tracking for systems and engagements you are authorized to assess.
+
+## Noise Filtering
+
+Not every command belongs in a report. DRAGON automatically skips shell noise so your timeline stays focused on real assessment activity:
+
+* Terminal control: `clear`, `reset`, `cls`
+* System-info splashes: `fastfetch`, `neofetch`, `screenfetch`, `pfetch`, `archey`, and similar
+* Navigation and builtins: `cd`, `pwd`, `ls`, `ll`, `la`, `exit`, `history`, `alias`, `jobs`, `fg`, `bg`, `source`, `which`, `type`
+* Pagers: `man`, `less`, `more`, `most`
+* Editors: `vi`, `vim`, `nvim`, `nano`, `emacs`, `micro`, `hx`
+* DRAGON's own commands (for example `dragonrepo status`)
+
+Compound commands are always kept, because they may contain real activity:
 
 ```bash
-dragonrepo status
+cd /tmp && nmap -sV 10.10.10.5
 ```
 
-Generate the reports:
+The list lives in `dragonrepo/modules/parser.py` (`NOISE_COMMANDS`) if you want to extend it.
 
-```bash
-dragonrepo generate
-```
+## Commands
 
-The generated files are:
+| Command | Description |
+| --- | --- |
+| `dragonrepo start <project>` | Create or resume a project and make it active. |
+| `dragonrepo stop` | Stop the active tracking session. |
+| `dragonrepo status` | Show the active project, start time, and command count. |
+| `dragonrepo list` | List known projects. |
+| `dragonrepo generate [project]` | Generate HTML, Markdown, and JSON reports. |
+| `dragonrepo open-report [project]` | Open the HTML report, generating it first if needed. |
+| `dragonrepo pdf [project]` | Export the HTML report to PDF (`wkhtmltopdf` or WeasyPrint). |
+| `dragonrepo where [project]` | Show project files, evidence, and report locations. |
+| `dragonrepo dashboard [project]` | Show activity categories and command frequency. |
+| `dragonrepo tools` | Show recognized security tools. |
+| `dragonrepo delete <project>` | Delete a project and its local data. |
+| `dragonrepo doctor` | Check local directories and launcher state. |
+| `dragonrepo guide` | Display the basic workflow. |
+| `dragonrepo hook <shell>` | Print shell integration code (`zsh`, `bash`, or `fish`). |
 
-```text
-report.html
-report.md
-report.json
-```
+Commands that accept `[project]` default to the active project.
 
 ## Example Full Session
 
@@ -158,316 +156,28 @@ dragonrepo generate
 dragonrepo open-report
 ```
 
-If you forget the basic workflow:
-
-```bash
-dragonrepo
-```
-
-## Commands
-
-### `dragonrepo start <project>`
-
-Creates or resumes a project and makes it the active tracking session.
-
-```bash
-dragonrepo start acme-corp
-```
-
-### `dragonrepo stop`
-
-Stops the active tracking session.
-
-```bash
-dragonrepo stop
-```
-
-### `dragonrepo status`
-
-Shows the active project, start time, command count, and project directory.
-
-```bash
-dragonrepo status
-```
-
-### `dragonrepo list`
-
-Lists known projects.
-
-```bash
-dragonrepo list
-```
-
-### `dragonrepo generate [project]`
-
-Generates HTML, Markdown, and JSON reports.
-
-For the active project:
-
-```bash
-dragonrepo generate
-```
-
-For a specific project:
-
-```bash
-dragonrepo generate acme-corp
-```
-
-### `dragonrepo open-report [project]`
-
-Opens the project's HTML report using an available desktop opener.
-
-```bash
-dragonrepo open-report
-```
-
-For a specific project:
-
-```bash
-dragonrepo open-report acme-corp
-```
-
-### `dragonrepo pdf [project]`
-
-Exports the generated HTML report to PDF when a supported PDF engine is available.
-
-```bash
-dragonrepo pdf
-```
-
-Supported PDF engines currently include `wkhtmltopdf` and WeasyPrint.
-
-### `dragonrepo where [project]`
-
-Shows project files, evidence, screenshots, scans, and report locations.
-
-```bash
-dragonrepo where
-```
-
-### `dragonrepo dashboard [project]`
-
-Shows activity categories and command frequency.
-
-```bash
-dragonrepo dashboard
-```
-
-### `dragonrepo tools`
-
-Shows recognized security tools.
-
-```bash
-dragonrepo tools
-```
-
-### `dragonrepo delete <project>`
-
-Deletes a project and its local report data.
-
-```bash
-dragonrepo delete old-project
-```
-
-### `dragonrepo doctor`
-
-Checks local DRAGON directories and launcher state.
-
-```bash
-dragonrepo doctor
-```
-
-### `dragonrepo guide`
-
-Displays the basic DRAGON workflow.
-
-```bash
-dragonrepo guide
-```
-
-### `dragonrepo hook <shell>`
-
-Prints shell integration code for command tracking.
-
-```bash
-dragonrepo hook zsh
-dragonrepo hook bash
-dragonrepo hook fish
-```
-
-## Shell Hooks
-
-Enable the shell hook in every terminal you want tracked.
-
-### Zsh
-
-```bash
-eval "$(dragonrepo hook zsh)"
-```
-
-To enable it automatically:
-
-```bash
-echo 'eval "$(dragonrepo hook zsh)"' >> ~/.zshrc
-```
-
-### Bash
-
-```bash
-eval "$(dragonrepo hook bash)"
-```
-
-### Fish
-
-```bash
-dragonrepo hook fish
-```
-
-Only use command tracking for systems and engagements you are authorized to assess.
-
 ## Project Storage
 
-DRAGON stores project data in the user's home directory:
-
-```text
-~/.dragonrepo/projects/<project>/
-```
-
-Example:
-
-```text
-~/.dragonrepo/projects/test-lab/
-```
-
-A project may contain:
+Project data lives in `~/.dragonrepo/projects/<project>/`:
 
 ```text
 commands.log
-notes/
-screenshots/
-scans/
-evidence/
-reports/
+notes/  screenshots/  scans/  evidence/  reports/
 config.json
 dragonrepo.sqlite3
 ```
 
-Reports are stored in:
-
-```text
-~/.dragonrepo/projects/<project>/reports/
-```
-
-For example:
-
-```text
-~/.dragonrepo/projects/test-lab/reports/report.html
-~/.dragonrepo/projects/test-lab/reports/report.md
-~/.dragonrepo/projects/test-lab/reports/report.json
-```
-
-## Evidence
-
-Place evidence files in the appropriate project directory:
-
-```text
-~/.dragonrepo/projects/<project>/notes/
-~/.dragonrepo/projects/<project>/screenshots/
-~/.dragonrepo/projects/<project>/scans/
-~/.dragonrepo/projects/<project>/evidence/
-```
-
-Supported evidence file types include:
-
-```text
-.xml
-.json
-.txt
-.csv
-.png
-.jpg
-.jpeg
-```
-
-After adding or changing evidence, regenerate the reports:
-
-```bash
-dragonrepo generate
-```
+Drop evidence files (`.xml`, `.json`, `.txt`, `.csv`, `.png`, `.jpg`, `.jpeg`) into the matching subdirectory, then run `dragonrepo generate` to include them. Reports are written to `reports/` as `report.html`, `report.md`, and `report.json`.
 
 ## Recognized Tools
 
-DRAGON automatically categorizes common security tools such as:
-
-* `nmap`
-* `rustscan`
-* `masscan`
-* `ffuf`
-* `gobuster`
-* `feroxbuster`
-* `dirsearch`
-* `nuclei`
-* `httpx`
-* `katana`
-* `amass`
-* `subfinder`
-* `nikto`
-* `sqlmap`
-* `hydra`
-* `smbclient`
-* `enum4linux`
-* `ldapsearch`
+DRAGON automatically categorizes common security tools, including `nmap`, `rustscan`, `masscan`, `ffuf`, `gobuster`, `feroxbuster`, `dirsearch`, `nuclei`, `httpx`, `katana`, `amass`, `subfinder`, `nikto`, `sqlmap`, `hydra`, `smbclient`, `enum4linux`, and `ldapsearch`.
 
 ## Sensitive Data Protection
 
-Before reports are generated, DRAGON attempts to redact sensitive information such as:
+Before reports are generated, DRAGON attempts to redact sensitive information such as API keys, tokens, passwords, authorization headers, bearer tokens, secrets, and session cookies.
 
-* API keys
-* Tokens
-* Passwords
-* Authorization headers
-* Bearer tokens
-* Secrets
-* Session cookies
-
-Always review generated reports before sharing them externally.
-
-Redaction is a safety aid and should not replace manual review.
-
-## Project Structure
-
-The source repository uses a standard Python package layout:
-
-```text
-dragonrepo/
-├── pyproject.toml
-├── README.md
-├── LICENSE
-├── requirements.txt
-└── dragonrepo/
-    ├── __init__.py
-    ├── cli.py
-    ├── modules/
-    │   ├── __init__.py
-    │   ├── evidence.py
-    │   ├── parser.py
-    │   ├── redactor.py
-    │   ├── reporter.py
-    │   ├── timeline.py
-    │   └── tracker.py
-    └── templates/
-        ├── report.html.j2
-        └── report.md.j2
-```
-
-The CLI is exposed through the package entry point:
-
-```text
-dragonrepo.cli:app
-```
-
-The Jinja templates are bundled inside the Python package so report generation works after installation.
+Redaction is a safety aid, not a replacement for manual review. Always review generated reports before sharing them externally.
 
 ## Development
 
@@ -479,84 +189,14 @@ cd dragonrepo
 python3 -m dragonrepo.cli --help
 ```
 
-For a clean end-to-end package test, see [Option 3: Install from a built wheel](#option-3-install-from-a-built-wheel) above, then run:
-
-```bash
-dragonrepo start packaging-test
-dragonrepo status
-dragonrepo generate
-```
+The package layout is a standard Python package (`dragonrepo/cli.py`, `dragonrepo/modules/`, and bundled Jinja templates in `dragonrepo/templates/`), exposed through the `dragonrepo.cli:app` entry point.
 
 ## Troubleshooting
 
-### `dragonrepo` is not found
-
-Make sure the package was installed successfully. From a cloned source tree:
-
-```bash
-python3 -m pip install .
-```
-
-Then verify:
-
-```bash
-dragonrepo --help
-```
-
-If the executable was installed into a user-local directory that is not on `PATH`, add that directory to your shell's `PATH`.
-
-### Report generation fails
-
-Check that the active project exists:
-
-```bash
-dragonrepo status
-```
-
-Then regenerate:
-
-```bash
-dragonrepo generate
-```
-
-### Commands are not being tracked
-
-Enable the appropriate shell hook again.
-
-For Zsh:
-
-```bash
-eval "$(dragonrepo hook zsh)"
-```
-
-For Bash:
-
-```bash
-eval "$(dragonrepo hook bash)"
-```
-
-For Fish:
-
-```bash
-dragonrepo hook fish
-```
-
-Then run a command and check:
-
-```bash
-dragonrepo status
-```
-
-### `report.html` cannot be opened
-
-`report.html` is a file, not a directory.
-
-Use:
-
-```bash
-dragonrepo open-report
-```
-or open the generated HTML file manually in a browser.
+* **`dragonrepo` is not found** — reinstall with `python3 -m pip install .` and verify with `dragonrepo --help`. If it installed to a user-local bin directory, add that directory to `PATH`.
+* **Commands are not tracked** — enable the hook again with `eval "$(dragonrepo hook zsh)"` (or bash/fish), run a command, then check `dragonrepo status`.
+* **Report generation fails** — confirm the active project exists (`dragonrepo status`) and regenerate with `dragonrepo generate`.
+* **`report.html` cannot be opened** — it is a file, not a directory. Use `dragonrepo open-report` or open the file in a browser.
 
 ## License
 

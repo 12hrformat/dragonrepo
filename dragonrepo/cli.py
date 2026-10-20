@@ -42,24 +42,23 @@ app = typer.Typer(
 console = Console()
 
 
-BANNER = r"""
- ____  ____      _    ____  ___  _   _
-|  _ \|  _ \    / \  / ___|/ _ \| \ | |
-| | | | |_) |  / _ \| |  _| | | |  \| |
-| |_| |  _ <  / ___ \ |_| | |_| | |\  |
-|____/|_| \_\/_/   \_\____|\___/|_| \_|
-       REPORT GENERATOR | dragonrepo
-"""
+_BANNER_FILE = Path(__file__).resolve().parent / "assets" / "banner.txt"
+
+try:
+    BANNER = _BANNER_FILE.read_text(encoding="utf-8").rstrip("\n")
+except OSError:  # pragma: no cover - fallback if assets are missing
+    BANNER = "REPORT GENERATOR | dragonrepo"
+
+TAGLINE = "Track commands. Collect evidence. Generate clean security reports."
 
 
 def print_banner() -> None:
-    console.print(
-        Panel.fit(
-            f"[bold red]{BANNER}[/bold red]\n"
-            "[white]Track commands. Collect evidence. Generate clean security reports.[/white]",
-            border_style="red",
-        )
-    )
+    banner_width = max((len(line) for line in BANNER.splitlines()), default=0)
+    if console.width >= banner_width:
+        body = f"[bold red]{BANNER}[/bold red]\n[white]{TAGLINE}[/white]"
+    else:
+        body = f"[bold red]DRAGON Report Generator[/bold red]\n[white]{TAGLINE}[/white]"
+    console.print(Panel.fit(body, border_style="red"))
 
 
 def active_project_name() -> str | None:
@@ -120,7 +119,9 @@ def start(project: str = typer.Argument(..., help="Project name, e.g. acme-corp"
         Panel(
             f"[bold green]Tracking active[/bold green]\n"
             f"Project: [bold]{name}[/bold]{switch_note}\n"
-            f"Path: {root}",
+            f"Path: {root}\n"
+            f"[yellow]Note:[/yellow] only terminals where you ran the shell hook record commands. "
+            f"Other terminals are not tracked.",
             title="DRAGON Session",
             border_style="green",
         )
@@ -329,7 +330,11 @@ dragonrepo_preexec() {
 }
 autoload -Uz add-zsh-hook
 add-zsh-hook preexec dragonrepo_preexec
-'''.strip()
+echo "dragonrepo: only THIS terminal records commands; others are not tracked."
+'''.strip(),
+            markup=False,
+            soft_wrap=True,
+            highlight=False,
         )
     elif shell == "bash":
         console.print(
@@ -340,7 +345,11 @@ dragonrepo_record_command() {
   command dragonrepo record "$cmd" >/dev/null 2>&1
 }
 PROMPT_COMMAND="dragonrepo_record_command${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
-'''.strip()
+echo "dragonrepo: only THIS terminal records commands; others are not tracked."
+'''.strip(),
+            markup=False,
+            soft_wrap=True,
+            highlight=False,
         )
     elif shell == "fish":
         console.print(
@@ -348,7 +357,11 @@ PROMPT_COMMAND="dragonrepo_record_command${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
 function dragonrepo_record_command --on-event fish_preexec
     command dragonrepo record "$argv" >/dev/null 2>&1
 end
-'''.strip()
+echo "dragonrepo: only THIS terminal records commands; others are not tracked."
+'''.strip(),
+            markup=False,
+            soft_wrap=True,
+            highlight=False,
         )
     else:
         console.print("[red]Unsupported shell. Use zsh, bash, or fish.[/red]")
