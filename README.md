@@ -72,7 +72,7 @@ dragonrepo doctor
 
 ```bash
 dragonrepo start test-lab          # create or resume a project
-eval "$(dragonrepo hook zsh)"      # enable tracking in THIS terminal (bash/fish below)
+eval "$(dragonrepo hook)"          # enable tracking in THIS terminal (auto-detects your shell)
 nmap -sV 10.10.10.5                # work normally
 dragonrepo status                  # active project and command count
 dragonrepo generate                # build HTML, Markdown, and JSON reports
@@ -85,23 +85,21 @@ Run `dragonrepo` with no arguments for the same workflow as an on-screen guide.
 
 DRAGON tracks commands **per terminal**. The hook only enables recording for the terminal where you run it — every other terminal keeps working normally and is *not* logged. When tracking is enabled, the shell prints a short reminder so it is always clear which terminal is being recorded.
 
-**Zsh:**
+The hook auto-detects your shell:
+
+```bash
+eval "$(dragonrepo hook)"
+```
+
+If detection fails, or you want to be explicit, pass the shell name (`zsh`, `bash`, or `fish`):
 
 ```bash
 eval "$(dragonrepo hook zsh)"
-```
-
-**Bash:**
-
-```bash
 eval "$(dragonrepo hook bash)"
-```
-
-**Fish:**
-
-```bash
 dragonrepo hook fish
 ```
+
+Running a hook for a different shell than your current one prints an error instead of silently doing nothing.
 
 To enable it automatically, add the matching line to your shell rc file, for example:
 
@@ -204,7 +202,7 @@ The package layout is a standard Python package (`dragonrepo/cli.py`, `dragonrep
 ## Troubleshooting
 
 * **`dragonrepo` is not found** — reinstall with `python3 -m pip install .` and verify with `dragonrepo --help`. If it installed to a user-local bin directory, add that directory to `PATH`.
-* **Commands are not tracked** — enable the hook again with `eval "$(dragonrepo hook zsh)"` (or bash/fish), run a command, then check `dragonrepo status`.
+* **Commands are not tracked** — enable the hook again with `eval "$(dragonrepo hook)"` (it auto-detects the shell, or pass `zsh`/`bash`/`fish`), run a command, then check `dragonrepo status`.
 * **Report generation fails** — confirm the active project exists (`dragonrepo status`) and regenerate with `dragonrepo generate`.
 * **`report.html` cannot be opened** — it is a file, not a directory. Use `dragonrepo open-report` or open the file in a browser.
 

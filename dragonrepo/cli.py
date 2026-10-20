@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -85,7 +86,7 @@ def print_quickstart() -> None:
     table.add_column("Command", style="bold")
     table.add_column("What it does")
     table.add_row("1", "dragonrepo start test-lab", "Creates a project and makes it active.")
-    table.add_row("2", 'eval "$(dragonrepo hook zsh)"', "Turns on live command tracking for this terminal.")
+    table.add_row("2", 'eval "$(dragonrepo hook)"', "Turns on live command tracking for this terminal.")
     table.add_row("3", "nmap -sV 10.10.10.5", "Work normally. DRAGON records useful commands.")
     table.add_row("4", "dragonrepo status", "Shows the active project and command count.")
     table.add_row("5", "dragonrepo generate", "Builds HTML, Markdown, and JSON for the active project.")
@@ -126,7 +127,7 @@ def start(project: str = typer.Argument(..., help="Project name, e.g. acme-corp"
             border_style="green",
         )
     )
-    console.print("Next: [bold]eval \"$(dragonrepo hook zsh)\"[/bold], then run your normal tools.")
+    console.print("Next: [bold]eval \"$(dragonrepo hook)\"[/bold], then run your normal tools.")
 
 
 @app.command()
@@ -315,13 +316,47 @@ def record(command: str = typer.Argument(..., help="Command line to record.")) -
     raise typer.Exit(code=0 if recorded else 0)
 
 
+SUPPORTED_SHELLS = ("zsh", "bash", "fish")
+
+
+def detect_shell() -> str | None:
+    """Best-effort detection of the calling shell from the parent process."""
+    try:
+        parent = subprocess.run(
+            ["ps", "-p", str(os.getppid()), "-o", "comm="],
+            capture_output=True,
+            text=True,
+            timeout=2,
+        ).stdout.strip()
+    except Exception:
+        return None
+    name = Path(parent).name.lower().lstrip("-")
+    for candidate in SUPPORTED_SHELLS:
+        if name == candidate or name.startswith(candidate):
+            return candidate
+    return None
+
+
 @app.command()
-def hook(shell: str = typer.Argument("zsh", help="zsh, bash, or fish")) -> None:
+def hook(shell: Optional[str] = typer.Argument(None, help="zsh, bash, or fish. Auto-detected when omitted.")) -> None:
     """Print shell integration code for live command tracking."""
+    if shell is None:
+        detected = detect_shell()
+        if detected is None:
+            console.print(
+                "[red]Could not detect your shell.[/red] Specify it explicitly, e.g. "
+                "[bold]dragonrepo hook bash[/bold]"
+            )
+            raise typer.Exit(code=1)
+        shell = detected
     shell = shell.lower()
     if shell == "zsh":
         console.print(
             r'''
+if [ -z "${ZSH_VERSION:-}" ]; then
+  echo "dragonrepo: this hook is for zsh but you are running ${SHELL:-another shell}. Try: dragonrepo hook bash" >&2
+  return 1 2>/dev/null || exit 1
+fi
 dragonrepo_preexec() {
   emulate -L zsh
   local cmd="$1"
@@ -339,6 +374,10 @@ echo "dragonrepo: only THIS terminal records commands; others are not tracked."
     elif shell == "bash":
         console.print(
             r'''
+if [ -z "${BASH_VERSION:-}" ]; then
+  echo "dragonrepo: this hook is for bash but you are running ${SHELL:-another shell}. Try: dragonrepo hook zsh" >&2
+  return 1 2>/dev/null || exit 1
+fi
 dragonrepo_record_command() {
   local cmd="$(history 1 | sed 's/^ *[0-9]\+ *//')"
   [[ "$cmd" == dragonrepo\ record* ]] && return
@@ -364,7 +403,9 @@ echo "dragonrepo: only THIS terminal records commands; others are not tracked."
             highlight=False,
         )
     else:
-        console.print("[red]Unsupported shell. Use zsh, bash, or fish.[/red]")
+        detected = detect_shell()
+        hint = f" You appear to be running [bold]{detected}[/bold]; try: [bold]dragonrepo hook {detected}[/bold]" if detected else ""
+        console.print(f"[red]Unsupported shell:[/red] {shell}. Use zsh, bash, or fish.{hint}")
         raise typer.Exit(code=1)
 
 
