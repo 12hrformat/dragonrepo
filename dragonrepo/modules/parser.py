@@ -45,11 +45,9 @@ SECURITY_TOOLS: dict[str, tuple[str, str]] = {
 
 NOISE_COMMANDS: frozenset[str] = frozenset(
     {
-        # terminal control / display
         "clear",
         "reset",
         "cls",
-        # system-info splashes
         "fastfetch",
         "neofetch",
         "screenfetch",
@@ -60,7 +58,6 @@ NOISE_COMMANDS: frozenset[str] = frozenset(
         "archey",
         "archey3",
         "nitch",
-        # shell navigation and builtins
         "cd",
         "pwd",
         "ls",
@@ -80,12 +77,10 @@ NOISE_COMMANDS: frozenset[str] = frozenset(
         "which",
         "type",
         "whereis",
-        # pagers
         "man",
         "less",
         "more",
         "most",
-        # editors
         "vi",
         "vim",
         "nvim",

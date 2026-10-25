@@ -48,9 +48,9 @@ _BANNER_FILE = Path(__file__).resolve().parent / "assets" / "banner.txt"
 try:
     BANNER = _BANNER_FILE.read_text(encoding="utf-8").rstrip("\n")
 except OSError:  # pragma: no cover - fallback if assets are missing
-    BANNER = "REPORT GENERATOR | dragonrepo"
+    BANNER = "Dragonrepo: a report generator by 12hrformat"
 
-TAGLINE = "Track commands. Collect evidence. Generate clean security reports."
+TAGLINE = "Track commands, evidence and BAM! report"
 
 
 def print_banner() -> None:
