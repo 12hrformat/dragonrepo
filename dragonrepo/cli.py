@@ -50,7 +50,7 @@ try:
 except OSError:  # pragma: no cover - fallback if assets are missing
     BANNER = "Dragonrepo: a report generator by 12hrformat"
 
-TAGLINE = "Track commands, evidence and BAM! report"
+TAGLINE = "                                     Track commands, evidence and BAM! report"
 
 
 def print_banner() -> None:
